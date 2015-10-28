@@ -27,7 +27,8 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-        Log.d("MainActivity","test001");
+        //Log.d("MainActivity","test001");
+
 
     }
 
