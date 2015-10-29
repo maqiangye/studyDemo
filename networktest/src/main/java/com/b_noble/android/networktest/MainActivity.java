@@ -7,21 +7,33 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.b_noble.android.networktest.util.HttpCallbackListener;
+import com.b_noble.android.networktest.util.HttpUtil;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,HttpCallbackListener{
 
     private final int SHOW_RESPONSE = 0;
 
@@ -62,12 +74,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void sendRequest(){
+
+        String address = "http://192.168.2.100:8080/examples/test_json.json";
+
+        HttpUtil.sendHttpRequest(address,this);
+        /**
         new Thread(new Runnable() {
             @Override
             public void run() {
                 HttpURLConnection connection = null;
                 try{
-                    URL url = new URL("http://www.baidu.com");
+                    URL url = new URL("http://192.168.2.100:8080/examples/test_json.json");
                     connection = (HttpURLConnection) url.openConnection();
                     connection.setRequestMethod("GET");
                     connection.setReadTimeout(8000);
@@ -81,6 +98,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         responseStr.append(line);
                     }
 
+                    //解析xml
+
+                    //paseXmlWithPull(responseStr.toString());
+
+                    parseJsonWithJsonObject(responseStr.toString());
                     Message message = new Message();
                     message.what = SHOW_RESPONSE;
                     message.obj = responseStr.toString();
@@ -92,6 +114,73 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }).start();
+         **/
+
+
+    }
+
+    private void parseJsonWithJsonObject(String jsonStr){
+        try {
+            JSONArray jsonArray = new JSONArray(jsonStr);
+            for(int i=0;i<jsonArray.length();i++){
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                String id = jsonObject.getString("id");
+                String name = jsonObject.getString("name");
+                String version = jsonObject.getString("version");
+                Log.d("MainActivity","id is:" + id);
+                Log.d("MainActivity","name is:" + name);
+                Log.d("MainActivity","version is:" + version);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void paseXmlWithPull(String xml){
+        try {
+            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+            XmlPullParser parser = factory.newPullParser();
+            parser.setInput(new StringReader(xml));
+            int eventType = parser.getEventType();
+
+            String id = "";
+            String name = "";
+            String version = "";
+            while (eventType != parser.END_DOCUMENT){
+                String nodeName = parser.getName();
+                switch (eventType){
+                    case XmlPullParser.START_TAG :{
+                        if("id".equals(nodeName)){
+                            id = parser.nextText();
+                        }else if("name".equals(nodeName)){
+                            name = parser.nextText();
+                        }else if("version".equals(nodeName)){
+                            version = parser.nextText();
+                        }
+                        break;
+                    }
+                    case XmlPullParser.END_TAG : {
+                        if("app".equals(nodeName)){
+
+                            Log.d("MainActivity","id:" + id);
+                            Log.d("MainActivity","name:" + name);
+                            Log.d("MainActivity","version:" + version);
+
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                eventType = parser.next();
+            }
+        } catch (XmlPullParserException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private Handler handler = new Handler(){
@@ -129,4 +218,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onFinish(String responseStr) {
+        parseJsonWithJsonObject(responseStr.toString());
+        Message message = new Message();
+        message.what = SHOW_RESPONSE;
+        message.obj = responseStr.toString();
+        handler.sendMessage(message);
+    }
+
+    @Override
+    public void onError(Exception e) {
+        Log.e("MainAcitivity",e.getMessage());
+        e.printStackTrace();
+    }
 }
