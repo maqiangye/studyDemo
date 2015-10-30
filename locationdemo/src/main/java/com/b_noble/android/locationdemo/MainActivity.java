@@ -19,6 +19,15 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.baidu.mapapi.SDKInitializer;
+import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.model.LatLng;
+
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,9 +36,14 @@ public class MainActivity extends AppCompatActivity {
     private LocationManager locationManager;
     private String provider;
 
+    private MapView mMapView = null;
+    private BaiduMap bdMap = null;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        //初始化
+        SDKInitializer.initialize(getApplicationContext());
+
         setContentView(R.layout.locationlayout);
 
         tv = (TextView) findViewById(R.id.locationTextView);
@@ -62,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         location = locationManager.getLastKnownLocation(provider);
 
+        /**
         while (location == null){
             Log.d("MainActivity.while","OLOL");
             locationManager.requestLocationUpdates(provider,5000,1,listener);
@@ -70,6 +85,19 @@ public class MainActivity extends AppCompatActivity {
         if(location !=null){
             showLocation(location);
         }
+        **/
+        mMapView = (MapView) findViewById(R.id.bmapView);
+
+        bdMap = mMapView.getMap();
+        //标注
+        bdMap.setMapType(BaiduMap.MAP_TYPE_SATELLITE);
+        LatLng point = new LatLng(39.963175, 116.400244);
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.mipmap.ic_launcher);
+        OverlayOptions option = new MarkerOptions()
+                .position(point)
+                .icon(bitmap);
+        bdMap.addOverlay(option);
 
     }
 
@@ -140,5 +168,12 @@ public class MainActivity extends AppCompatActivity {
         if(locationManager != null){
             locationManager.removeUpdates(listener);
         }
+
+        mMapView.onDestroy();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
     }
 }
