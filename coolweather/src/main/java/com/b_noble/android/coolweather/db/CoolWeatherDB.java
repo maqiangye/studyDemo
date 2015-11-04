@@ -20,7 +20,7 @@ public class CoolWeatherDB {
     public static final String DB_NAME = "cool_weather";
 
     public static final int VERSION = 1;
-    private CoolWeatherDB coolWeatherDB;
+    private static CoolWeatherDB coolWeatherDB;
 
     private SQLiteDatabase db;
 
@@ -29,7 +29,7 @@ public class CoolWeatherDB {
         db = dbHelper.getWritableDatabase();
     }
 
-    public synchronized CoolWeatherDB getInstance(Context context){
+    public static synchronized CoolWeatherDB getInstance(Context context){
         if(coolWeatherDB == null){
             coolWeatherDB = new CoolWeatherDB(context);
         }
@@ -95,10 +95,10 @@ public class CoolWeatherDB {
     public void addCounty(County county){
         if(county!= null){
             ContentValues cv = new ContentValues();
-            cv.put("countyName",county.getCountyName());
-            cv.put("countCode",county.getCountyCode());
-            cv.put("cityId",county.getCityId());
-            db.insert("City",null,cv);
+            cv.put("county_name",county.getCountyName());
+            cv.put("county_code",county.getCountyCode());
+            cv.put("city_id",county.getCityId());
+            db.insert("County",null,cv);
         }
     }
 
