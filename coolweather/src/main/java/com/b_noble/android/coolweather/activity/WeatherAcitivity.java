@@ -57,7 +57,7 @@ public class WeatherAcitivity extends Activity implements View.OnClickListener{
         String countyCode = getIntent().getStringExtra("county_code");
 
         if(!TextUtils.isEmpty(countyCode)){
-            Log.d("WeatherAcitivity.onCreate",countyCode);
+            Log.d("WeatherAcitivity",countyCode);
             //县，查天气
             publishText.setText("更新中...");
             weatherInfoLayout.setVisibility(View.INVISIBLE);
@@ -141,7 +141,7 @@ public class WeatherAcitivity extends Activity implements View.OnClickListener{
             case R.id.refresh_weather :
                 publishText.setText("同步中...");
                 SharedPreferences sprences = PreferenceManager.getDefaultSharedPreferences(this);
-                String weatherCode = sprences.getString("weather_code",null);
+                String weatherCode = sprences.getString("cityCode",null);
                 if(!TextUtils.isEmpty(weatherCode)){
                     queryWeatherInfo(weatherCode);
                 }
