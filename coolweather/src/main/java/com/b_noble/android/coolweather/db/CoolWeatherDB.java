@@ -105,7 +105,7 @@ public class CoolWeatherDB {
     //取城市下面的区县信息
     public List<County> loadCounty(int cityId){
         List<County> counties = new ArrayList<County>();
-        Cursor cursor = db.query("County",null,"city_id = ?",new String[]{},null,null,null);
+        Cursor cursor = db.query("County",null,"city_id = ?",new String[]{cityId + ""},null,null,null);
         if(cursor.moveToFirst()){
             do{
                 County county = new County();
